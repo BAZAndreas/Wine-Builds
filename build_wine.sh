@@ -243,8 +243,6 @@ else
 		mv "wine-${WINE_VERSION}" wine
 	fi
 
-	patch -d wine -Np1 < "${scriptdir}"/revert-242fcdd.patch && echo "Applied fix for wow64 mode"
-
 	if [ "${WINE_BRANCH}" = "staging" ]; then
 		if [ "${WINE_VERSION}" = "git" ]; then
 			git clone https://github.com/wine-staging/wine-staging wine-staging-"${WINE_VERSION}"
@@ -337,7 +335,7 @@ export CROSSCXXFLAGS="${CROSSCFLAGS_X64}"
 mkdir "${BUILD_DIR}"/build64
 cd "${BUILD_DIR}"/build64 || exit
 ${BWRAP64} "${BUILD_DIR}"/wine/configure --enable-win64 ${WINE_BUILD_OPTIONS} --prefix "${BUILD_DIR}"/wine-"${BUILD_NAME}"-amd64
-${BWRAP64} make -j$(nproc) install
+${BWRAP64} make -j$(nproc)
 
 export CROSSCC="${CROSSCC_X32}"
 export CROSSCXX="${CROSSCXX_X32}"
@@ -360,6 +358,16 @@ mkdir "${BUILD_DIR}"/build32
 cd "${BUILD_DIR}"/build32 || exit
 PKG_CONFIG_LIBDIR="/usr/local/lib/pkgconfig:/usr/local/lib/i386-linux-gnu/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig" ${BWRAP32} "${BUILD_DIR}"/wine/configure --with-wine64="${BUILD_DIR}"/build64 --with-wine-tools="${BUILD_DIR}"/build32-tools ${WINE_BUILD_OPTIONS} --prefix "${BUILD_DIR}"/wine-${BUILD_NAME}-amd64
 ${BWRAP32} make -j$(nproc) install
+
+export CROSSCC="${CROSSCC_X64}"
+export CROSSCXX="${CROSSCXX_X64}"
+export CFLAGS="${CFLAGS_X64}"
+export CXXFLAGS="${CFLAGS_X64}"
+export CROSSCFLAGS="${CROSSCFLAGS_X64}"
+export CROSSCXXFLAGS="${CROSSCFLAGS_X64}"
+
+cd "${BUILD_DIR}"/build64 || exit
+${BWRAP64} make -j$(nproc) install
 
 echo
 echo "Compilation complete"
